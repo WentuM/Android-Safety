@@ -1,5 +1,6 @@
 package com.example.plugin
 
+import com.example.plugin.rules.EditTextConfidentType
 import com.example.plugin.toolwindow.MyToolWindowFactory
 import com.intellij.execution.executors.DefaultRunExecutor
 import com.intellij.execution.filters.TextConsoleBuilderFactory
@@ -15,6 +16,7 @@ import com.intellij.openapi.editor.markup.RangeHighlighter
 import com.intellij.openapi.externalSystem.service.execution.ProgressExecutionMode
 import com.intellij.openapi.externalSystem.util.ExternalSystemUtil
 import com.intellij.openapi.wm.ToolWindow
+import com.intellij.openapi.wm.ToolWindowAnchor
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.ui.JBColor
 import com.jetbrains.rd.util.string.printToString
@@ -49,7 +51,7 @@ class CheckAnAction : AnAction() {
 
 
         WriteCommandAction.runWriteCommandAction(e.project!!, COMMAND_NAME, GROUP_ID, {
-            EditTextConfidentType(e.project!!).show()
+            AndroidSafetyCheck(e.project!!)
         })
     }
 }

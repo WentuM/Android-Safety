@@ -1,28 +1,26 @@
-package com.example.plugin
+package com.example.plugin.rules
 
+import com.example.plugin.SourceRootRepository
+import com.example.plugin.annotator.AnnotatorRepository
+import com.example.plugin.annotator.AnnotatorRuleModel
+import com.example.plugin.annotator.RuleModel
 import com.example.plugin.models.Directory
 import com.example.plugin.models.Module
-import com.example.plugin.toolwindow.MyToolWindowFactory
 import com.intellij.codeInsight.highlighting.HighlightManager
 import com.intellij.execution.filters.TextConsoleBuilderFactory
+import com.intellij.execution.ui.ConsoleView
 import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.editor.RangeMarker
-import com.intellij.openapi.editor.markup.HighlighterTargetArea
-import com.intellij.openapi.editor.markup.TextAttributes
+import com.intellij.openapi.editor.event.DocumentEvent
+import com.intellij.openapi.editor.event.DocumentListener
 import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectRootManager
-import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.ToolWindowAnchor
-import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.openapi.wm.ToolWindowManager
-import com.intellij.openapi.wm.ex.ToolWindowManagerListener
-import com.intellij.psi.PsiFile
-import org.jetbrains.kotlin.idea.inspections.findExistingEditor
-import java.awt.Color
-import java.awt.Font
+import com.intellij.psi.*
 import java.util.*
 import java.util.stream.Collectors
 
@@ -30,7 +28,8 @@ import java.util.stream.Collectors
 const val LAYOUT_DIRECTORY = "layout"
 
 class EditTextConfidentType(
-    private val project: Project
+    private val project: Project,
+    private val consoleView: ConsoleView
 ) {
 
     fun show() {
@@ -62,6 +61,16 @@ class EditTextConfidentType(
             listFileTextLayout?.forEach {
                 firstTestXml(it)
             }
+
+            findCodeSubdirectory(Module(
+                module.name,
+                nameWithoutPrefix = module.name.replace("${projectName}.", "")
+            ))
+//            println("spisok - " + listFileCodeTextLayout.toString())
+//            listFileCodeTextLayout?.forEach {
+//                val a = it.toUElement(UMethod::class.java) as UMethod
+//                println("ватофак - " + a.uastBody.toString())
+//            }
         }
     }
 
@@ -72,11 +81,49 @@ class EditTextConfidentType(
         }
     }
 
+    private fun findCodeSubdirectory(module: Module) {
+        val sourceRootRepository = SourceRootRepository(project)
+        sourceRootRepository.findCodeSourceRoot(module)?.directory?.run {
+            //рекурсивно пройти по всем файлам всех директорий
+            println("subdirectories:  "+ psiDirectory.subdirectories.get(0).name.toString())
+
+
+            getSubDirectories(psiDirectory)
+
+
+//            psiDirectory.subdirectories.forEach {
+//                println("begin: ")
+//                println(it.name)
+//                println("end: ")
+//            }
+            getFilesText().forEach {
+                println("text - " + it.text)
+//                println("methoooods   "+ it.getContainingClass()?.findMethodsByName("onCreate", false)?.size)
+
+                //правильный хэшкод при изменении файлов
+                println("hashcode " + it.text.hashCode())
+//                val a = it.toUElement(UCallExpression::class.java) as UMethod
+//                println("ватофак - " + a.uastBody.toString())
+            }
+//            psiDirectory.subdirectories.forEach {
+//                println("lolo"+ Directory(project, it).getFilesText())
+//            }
+        }
+    }
+
+//    private fun getPublishMethods(): Array<PsiMethod> {
+//        val javaPsiFacade = JavaPsiFacade.getInstance(project)
+//        val publisherClass = javaPsiFacade.findClass(EVENT_PUBLISHER, scope) ?: return emptyArray()
+//
+//        return publisherClass.findMethodsByName(PUBLISH_EVENT_METHOD, false)
+//    }
+
     private fun firstTestXml(layoutFile: PsiFile) {
         val textLayoutFile = layoutFile.text
         val editText = "EditText"
         val passwordText = "passwordEditText"
         var index = 0
+        val annotatorRuleModel = AnnotatorRuleModel(layoutFile.name, mutableListOf())
 
         //получение ссылки на файл с первой строкой
 //        println(layoutFile.originalFile.virtualFile.path + ":1")
@@ -89,20 +136,20 @@ class EditTextConfidentType(
                 val currentLastIndex = textLayoutFile.indexOf(">", index)
                 val currentString = textLayoutFile.substring(index, currentLastIndex)
 
+                //indexOf id="@
                 val passwordIndex = currentString.indexOf(passwordText)
                 if (passwordIndex != -1) {
-                    val editor = layoutFile.findExistingEditor()
-                    editor?.markupModel?.addRangeHighlighter(
-                        index + passwordIndex,
-                        index + passwordIndex + passwordText.length,
-                        9999,
-                        TextAttributes(null, Color.red, null, null, Font.PLAIN),
-                        HighlighterTargetArea.EXACT_RANGE
-                    )
-
-                    println(index)
-                    println(passwordIndex)
-                    createConsole(layoutFile, index + passwordIndex)
+//                    val editor = layoutFile.findExistingEditor()
+//                    editor?.markupModel?.addRangeHighlighter(
+//                        index + passwordIndex,
+//                        index + passwordIndex + passwordText.length,
+//                        9999,
+//                        TextAttributes(null, Color.red, null, null, Font.PLAIN),
+//                        HighlighterTargetArea.EXACT_RANGE
+//                    )
+//
+//                    println(index)
+//                    println(passwordIndex)
 //                    editor?.markupModel?.document?.createRangeMarker(
 //                        index + passwordIndex,
 //                        index + passwordIndex + passwordText.length,
@@ -114,7 +161,17 @@ class EditTextConfidentType(
                     if (inputTypeConfidentIndex != -1) {
                         println("Индекс вхождения инпут тайпа " + inputTypeConfidentIndex)
                     } else {
-                        resolveFirstTextXml(layoutFile, index, currentLastIndex)
+                        annotatorRuleModel.ruleList.add(
+                            RuleModel(
+                                index + passwordIndex,
+                                index + passwordIndex + passwordText.length,
+                                "Where textNoSuggestions?"
+                            )
+                        )
+
+                        printConsoleView(layoutFile, index + passwordIndex)
+
+//                        resolveFirstTextXml(layoutFile, index, currentLastIndex)
                         println("Индекс вхождения инпут тайпа отсутствует. Необходимо добавить инпут тайп.")
                     }
                 }
@@ -124,12 +181,26 @@ class EditTextConfidentType(
             }
 //            println("Индекс вхождения по айди эдит текста" + firstIndex)
         }
+        //вносить сразу, а не после окончания файла
+        if (annotatorRuleModel.ruleList.isNotEmpty()) {
+            AnnotatorRepository.annotatorFileNameList.add(annotatorRuleModel.fileName)
+            AnnotatorRepository.annotatorRuleModelList.add(annotatorRuleModel)
+
+            layoutFile.viewProvider.document.addDocumentListener(object: DocumentListener {
+                override fun documentChanged(event: DocumentEvent) {
+                    super.documentChanged(event)
+                    println("moveOffset3 = ${event.moveOffset}")
+                    println("oldLength = ${event.oldLength}")
+                    println("newLength = ${event.newLength}")
+                }
+            })
+        }
     }
 
     private fun resolveFirstTextXml(layoutFile: PsiFile, index: Int, currentLastIndex: Int) {
 //        layoutFile.viewProvider.document?.setText("lolololo")
-        val rangeMarker: RangeMarker? = layoutFile.viewProvider.document?.createRangeMarker(0, 10)
-        val lighter = HighlightManager.getInstance(project)
+//        val rangeMarker: RangeMarker? = layoutFile.viewProvider.document?.createRangeMarker(0, 10)
+//        val lighter = HighlightManager.getInstance(project)
 
 
 //        val factory = TextConsoleBuilderFactory.getInstance()
@@ -154,53 +225,26 @@ class EditTextConfidentType(
         layoutFile.viewProvider.document?.insertString(index, "\nandroid:inputType=\"textNoSuggestions\"")
     }
 
-    private fun createConsole(layoutFile: PsiFile, passwordIndex: Int) {
-        // 1) сделать один вызов метода, который заполняет контент, при перезапуске
-        // уже предусмотрено, что открывается новый диалог
-        // 2) фокус и сам билд открываются, если билд активен - сделать активным билд в первый запуск)
-        // 3) как в документации сделать фильтр на редактируемый файл, только подсвечивать буду с помощью плагина,
-        // а точнее по названию файла и индексам, где нужно подсветить?
-        //
-
-        val mainToolWindow = ToolWindowManager.getInstance(project)
-            .registerToolWindow("Android Safety", true, ToolWindowAnchor.BOTTOM, project, true)
-
-        val toolWindow = ToolWindowManager.getInstance(project).getToolWindow("Android Safety")
-
-        toolWindow?.show()
-        val consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(project).console
-        val content =
-            toolWindow?.contentManager?.factory?.createContent(consoleView.component, "Android Safety Output", false)
-        if (content != null) {
-
-            content.setDisposer(Disposable { mainToolWindow.remove() })
-
-            val currentContent = toolWindow.contentManager.findContent("MyPlugin Output")
-            println(toolWindow.contentManager.findContent("MyPlugin Output"))
-            if (currentContent != null) {
-                println("yes")
-                println(toolWindow.contentManager.removeContent(currentContent, true))
-                toolWindow.contentManager.addContent(content)
-                toolWindow.contentManager.setSelectedContent(content)
-            } else {
-                println("no")
-                toolWindow.contentManager.addContent(content)
-                toolWindow.contentManager.setSelectedContent(content)
-            }
-        }
+    private fun printConsoleView(layoutFile: PsiFile, passwordIndex: Int) {
         consoleView.print(
             layoutFile.originalFile.virtualFile.path + ":" + layoutFile.viewProvider.document.getLineNumber(
                 passwordIndex
             ) + ": Something", ConsoleViewContentType.NORMAL_OUTPUT
         )
-
-
-
-//        mainToolWindow.remove()
     }
 
     private fun testConsole(layoutFile: PsiFile, passwordIndex: Int) {
 //        val console = TextConsoleBuilderFactory.getInstance().createBuilder(project).console
 //        console.attachToProcess()
+    }
+
+    private fun getSubDirectories(psiDirectory: PsiDirectory) {
+        println("directory: " + psiDirectory.name)
+        psiDirectory.files.forEach {
+            println("file: " + it.name)
+        }
+        psiDirectory.subdirectories.forEach {
+            getSubDirectories(it)
+        }
     }
 }

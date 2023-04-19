@@ -24,15 +24,23 @@
 
     <depends>com.intellij.modules.lang</depends>
     <depends>org.jetbrains.kotlin</depends>
+    <depends>com.intellij.modules.java</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <defaultProjectTypeProvider type="Android"/>
-<!--        <toolWindow id="Android Safety"-->
-<!--                    anchor="bottom"-->
-<!--                    icon="AllIcons.General.Modified"-->
-<!--                    canCloseContents="true"-->
-<!--                    factoryClass="com.example.plugin.toolwindow.MyToolWindowFactory">-->
-<!--        </toolWindow>-->
+        <annotator
+                language="kotlin"
+                implementationClass="com.example.plugin.annotator.KotlinRuleAnnotator"/>
+
+        <annotator
+                language="XML"
+                implementationClass="com.example.plugin.annotator.XmlRuleAnnotator"/>
+<!--        <defaultProjectTypeProvider type="Android"/>-->
+        <!--        <toolWindow id="Android Safety"-->
+        <!--                    anchor="bottom"-->
+        <!--                    icon="AllIcons.General.Modified"-->
+        <!--                    canCloseContents="true"-->
+        <!--                    factoryClass="com.example.plugin.toolwindow.MyToolWindowFactory">-->
+        <!--        </toolWindow>-->
     </extensions>
 
     <actions>

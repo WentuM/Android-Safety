@@ -6,7 +6,7 @@ import com.intellij.psi.PsiFile
 
 data class Directory(
     private val project: Project,
-    private val psiDirectory: PsiDirectory
+    val psiDirectory: PsiDirectory
 ) {
     fun findSubdirectory(name: String) = psiDirectory.findSubdirectory(name)?.let { Directory(project, it) }
 

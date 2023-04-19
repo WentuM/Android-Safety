@@ -15,6 +15,9 @@ repositories {
     mavenCentral()
     google()
     maven { setUrl("https://plugins.gradle.org/m2/") }
+    maven {
+        url = uri("https://jitpack.io")
+    }
 }
 
 buildscript {
@@ -39,7 +42,15 @@ dependencies {
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.5.2")
     testImplementation("app.cash.turbine:turbine:0.7.0")
 
+    implementation("com.github.shibing624:similarity:1.1.6")
+
+//    implementation("com.github.cretz.kastree:kastree-ast-jvm:0.4.0")
+//    implementation("com.github.cretz.kastree:kastree-ast-psi:0.4.0")
+
+//    implementation("com.github.kotlinx.ast:grammar-kotlin-parser-antlr-kotlin:0123456789")
+
     implementation("com.android.tools.build:gradle:3.5.3")
+    implementation("org.apache.commons:commons-lang3:3.12.0")
 }
 
 // Configure Gradle IntelliJ Plugin
@@ -47,7 +58,7 @@ dependencies {
 intellij {
     version.set("2021.2")
     type.set("IC") // Target IDE Platform
-    plugins.set(listOf("org.jetbrains.kotlin"))
+    plugins.set(listOf("org.jetbrains.kotlin", "java"))
 }
 
 gradlePlugin {
