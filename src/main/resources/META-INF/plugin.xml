@@ -34,6 +34,12 @@
         <annotator
                 language="XML"
                 implementationClass="com.example.plugin.annotator.XmlRuleAnnotator"/>
+
+        <defaultProjectTypeProvider type="Android"/>
+        <projectConfigurable
+                instance="com.example.plugin.data.SettingsConfigurable">
+        </projectConfigurable>
+        <projectService serviceInterface="com.example.plugin.data.ScreenGeneratorComponent" serviceImplementation="com.example.plugin.data.ScreenGeneratorComponent"/>
 <!--        <defaultProjectTypeProvider type="Android"/>-->
         <!--        <toolWindow id="Android Safety"-->
         <!--                    anchor="bottom"-->

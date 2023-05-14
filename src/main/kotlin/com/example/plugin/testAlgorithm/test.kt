@@ -5,11 +5,17 @@ import org.xm.Similarity
 import org.xm.similarity.text.CosineSimilarity
 import kotlin.math.max
 
+//сохранение результатов анализа, чтобы не анализировать неизменные файлы
+//реализация анализа котлин файлов
+//пытаюсь внедрить единое абстрактное дерево для решения некоторых правил
+//реализовал еще правила
+//рефакторинг по мелочам, консоль
+
 
 fun main(args: Array<String>) {
 
-    val text1 = "pswd"
-    val text2 = "psw_edit_text"
+    val text1 = "passwordEditText"
+    val text2 = "password"
 
     println(Similarity.cilinSimilarity(text1, text2))
     println(Similarity.morphoSimilarity(text1, text2))

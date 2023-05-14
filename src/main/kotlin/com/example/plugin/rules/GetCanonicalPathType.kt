@@ -62,31 +62,4 @@ class GetCanonicalPathType(
             ConsoleViewContentType.NORMAL_OUTPUT
         )
     }
-
-    private fun getMethods() {
-        val psiMethod = PsiTreeUtil.getParentOfType(psiFile, PsiMethod::class.java)
-        println("method " + psiMethod)
-        println("methods " + (psiFile.getContainingClass()?.allMethods ?: " "))
-        val file = psiFile.toUElement() as UFile
-
-
-        file.classes.forEach {
-            it.findMethodsByName("show").forEach { jvmMethod ->
-                println("jvm: " + jvmMethod.name)
-                println(jvmMethod.sourceElement?.textOffset)
-                val jvmMethodStartOffset = jvmMethod.sourceElement?.startOffset
-                val jvmMethodEndOffset = jvmMethod.sourceElement?.endOffset
-//                println(jvmMethod.sourceElement?.textRange)
-                if (jvmMethodStartOffset != null && jvmMethodEndOffset != null) {
-//                    psiFile.viewProvider.document?.replaceString(
-//                        jvmMethodStartOffset, jvmMethodEndOffset,
-//                        "getCanonicalPath()"
-//                    )
-                }
-            }
-            it.methods.forEach { uMethod ->
-                println("methooods: " + uMethod.name)
-            }
-        }
-    }
 }

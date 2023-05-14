@@ -1,4 +1,4 @@
-package com.example.plugin
+package com.example.plugin.repository
 
 import com.example.plugin.models.Module
 import com.example.plugin.models.SourceRoot

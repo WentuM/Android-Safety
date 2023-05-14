@@ -61,14 +61,14 @@ intellij {
     plugins.set(listOf("org.jetbrains.kotlin", "java"))
 }
 
-gradlePlugin {
-    plugins {
-        create("MyPlugin") {
-            id = "MyPlugin"
-            implementationClass = "com.example.plugin.MyPlugin"
-        }
-    }
-}
+//gradlePlugin {
+//    plugins {
+//        create("MyPlugin") {
+//            id = "MyPlugin"
+//            implementationClass = "com.example.plugin.MyPlugin"
+//        }
+//    }
+//}
 
 //gradlePlugin {
 //    plugins {

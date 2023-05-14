@@ -1,11 +1,11 @@
 package com.example.plugin.rules
 
-import com.example.plugin.SourceRootRepository
 import com.example.plugin.annotator.AnnotatorRepository
 import com.example.plugin.annotator.AnnotatorRuleModel
 import com.example.plugin.annotator.RuleModel
 import com.example.plugin.models.Directory
 import com.example.plugin.models.Module
+import com.example.plugin.repository.SourceRootRepository
 import com.intellij.codeInsight.highlighting.HighlightManager
 import com.intellij.execution.filters.TextConsoleBuilderFactory
 import com.intellij.execution.ui.ConsoleView

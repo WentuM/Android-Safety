@@ -2,8 +2,10 @@ package com.example.plugin
 
 import com.example.plugin.models.Directory
 import com.example.plugin.models.Module
+import com.example.plugin.repository.SourceRootRepository
 import com.example.plugin.rules.GetCanonicalPathType
 import com.example.plugin.rules.LAYOUT_DIRECTORY
+import com.example.plugin.rules.WebViewAllowFileAccess
 import com.intellij.execution.filters.TextConsoleBuilderFactory
 import com.intellij.execution.ui.ConsoleView
 import com.intellij.execution.ui.ConsoleViewContentType
@@ -167,6 +169,7 @@ class AndroidSafetyCheck(
         psiDirectory.files.forEach {
             println("file: " + it.name)
             GetCanonicalPathType(project, it, consoleView).show()
+            WebViewAllowFileAccess(project, it, consoleView).show()
         }
         psiDirectory.subdirectories.forEach {
             getSubDirectories(it)
