@@ -1,5 +1,7 @@
 package com.example.plugin
 
+import com.example.plugin.annotator.AnnotatorRepository
+import com.example.plugin.data.ScreenGeneratorComponent
 import com.example.plugin.models.Directory
 import com.example.plugin.models.Module
 import com.example.plugin.repository.SourceRootRepository
@@ -32,8 +34,12 @@ class AndroidSafetyCheck(
         private const val END_CONSOLE_MESSAGE = "\n\nEnd of Android Safety Analysis"
     }
 
+    private var webViewAllowFileAccess: WebViewAllowFileAccess
+
     init {
         createConsole()
+        val ruleListForCheck = ScreenGeneratorComponent.getInstance(project).settings.ruleList
+        webViewAllowFileAccess = WebViewAllowFileAccess(project, consoleView, ruleListForCheck[0].isSelected)
         printConsoleView(BEGIN_CONSOLE_MESSAGE)
         getAllFiles()
         printConsoleView(END_CONSOLE_MESSAGE)
@@ -69,6 +75,7 @@ class AndroidSafetyCheck(
             val listFileTextLayout = resourcesSubdirectory?.getFilesText()
             listFileTextLayout?.forEach {
 //                firstTestXml(it)
+                if (webViewAllowFileAccess.isNeedCheck) webViewAllowFileAccess.firstTestXml(it)
             }
 
             findCodeSubdirectory(
@@ -83,6 +90,7 @@ class AndroidSafetyCheck(
 //                println("ватофак - " + a.uastBody.toString())
 //            }
         }
+        AnnotatorRepository.annotatorRuleModelList
     }
 
     private fun createConsole() {
@@ -169,7 +177,7 @@ class AndroidSafetyCheck(
         psiDirectory.files.forEach {
             println("file: " + it.name)
             GetCanonicalPathType(project, it, consoleView).show()
-            WebViewAllowFileAccess(project, it, consoleView).show()
+            if (webViewAllowFileAccess.isNeedCheck) webViewAllowFileAccess.show(it)
         }
         psiDirectory.subdirectories.forEach {
             getSubDirectories(it)

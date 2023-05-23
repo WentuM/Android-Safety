@@ -9,8 +9,8 @@ import com.intellij.util.xmlb.XmlSerializerUtil
 import java.io.Serializable
 
 @State(
-    name = "ScreenGeneratorConfiguration",
-    storages = [Storage(value = "screenGeneratorConfiguration.xml")]
+    name = "ScreenGeneratorComponent",
+    storages = [Storage(value = "screenGeneratorComponent.xml")]
 )
 class ScreenGeneratorComponent : Serializable, PersistentStateComponent<ScreenGeneratorComponent> {
 
@@ -19,6 +19,8 @@ class ScreenGeneratorComponent : Serializable, PersistentStateComponent<ScreenGe
     }
 
     var settings: Settings = Settings()
+
+    var settingsRules: SettingsRules = SettingsRules()
 
     override fun getState(): ScreenGeneratorComponent = this
 

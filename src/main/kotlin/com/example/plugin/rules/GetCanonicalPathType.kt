@@ -28,7 +28,7 @@ class GetCanonicalPathType(
 
     fun show() {
         val pattern = "absolutePath"
-        val annotatorRuleModel = AnnotatorRuleModel(psiFile.name, mutableListOf())
+        val annotatorRuleModel = AnnotatorRuleModel(psiFile.name, mutableListOf(), psiFile.text.hashCode())
 
         val foundIndexes = MainKt().performKMPSearch(psiFile.text, pattern)
 

@@ -18,7 +18,7 @@ class SettingsConfigurable(private val project: Project) : Configurable {
     override fun getDisplayName() = "Android Safety Plugin"
 
     override fun apply() {
-
+        panel.applyRuleSettings()
     }
 
     override fun reset() {
@@ -26,7 +26,7 @@ class SettingsConfigurable(private val project: Project) : Configurable {
     }
 
     override fun isModified(): Boolean {
-        return true
+        return panel.isModify
     }
 
     override fun createComponent(): JComponent {

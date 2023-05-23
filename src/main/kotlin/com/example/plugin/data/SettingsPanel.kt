@@ -9,23 +9,13 @@ import java.awt.FlowLayout
 import javax.swing.BoxLayout
 import javax.swing.JPanel
 
-class SettingsPanel(project: Project) : JPanel() {
+class SettingsPanel(val project: Project) : JPanel() {
 
-    val ruleElementsPanel = RuleElementsPanel()
-//    val categoriesPanel = CategoriesPanel()
-//    val screenElementDetailsPanel = ScreenElementDetailsPanel()
-//    val customVariablesPanel = CustomVariablesPanel()
-//    val customVariableDetailsPanel = CustomVariableDetailsPanel()
-//    val categoryDetailsPanel = CategoryDetailsPanel()
-//    val codePanels: Map<FileType, CodePanel>
-
-//    var onTemplateTextChanged: ((String) -> Unit)? = null
-//        set(value) {
-//            field = value
-//            codePanels.forEach { _, panel -> panel.onTemplateTextChanged = value }
-//        }
+    private val ruleElementsPanel = RuleElementsPanel(ScreenGeneratorComponent.getInstance(project).settings.ruleList, ::onCheckBoxClicked)
 
     var onHelpClicked: (() -> Unit)? = null
+
+    var isModify = false
 
     init {
         layout = BorderLayout()
@@ -36,63 +26,25 @@ class SettingsPanel(project: Project) : JPanel() {
         val contentPanel = JPanel().apply {
             layout = BorderLayout()
 
+            println(ScreenGeneratorComponent.getInstance(project).settings.ruleList)
             add(ruleElementsPanel)
-
-//            val topPanel = JPanel().apply {
-//                layout = BoxLayout(this, BoxLayout.Y_AXIS)
-//
-//                add(ruleElementsPanel)
-//            }
-//
-//                add(
-//                    JBSplitter(0.3f).apply {
-//                        firstComponent = categoriesPanel
-//                        secondComponent = JBSplitter(0.4f).apply {
-//                            firstComponent = customVariablesPanel
-//                            secondComponent = JPanel().apply {
-//                                layout = BoxLayout(this, BoxLayout.Y_AXIS)
-//                                add(categoryDetailsPanel)
-//                                add(customVariableDetailsPanel)
-//                            }
-//                        }
-//                    }
-//                )
-//                add(
-//                    JBSplitter(0.3f).apply {
-//                        firstComponent = screenElementsPanel
-//                        secondComponent = screenElementDetailsPanel
-//                    }
-//                )
-//            }
-
-//            add(topPanel, BorderLayout.PAGE_START)
-
-//            add(
-//                JPanel().apply {
-//                    layout = BoxLayout(this, BoxLayout.Y_AXIS)
-//                    codePanels.forEach { (_, panel) -> add(panel) }
-//                },
-//                BorderLayout.CENTER
-//            )
-//            add(topPanel)
         }
 
         add(helpPanel, BorderLayout.PAGE_START)
         add(contentPanel, BorderLayout.PAGE_START)
     }
 
-//    fun render(state: SettingsState) {
-//        categoriesPanel.render(state)
-//        categoryDetailsPanel.render(state)
-//        customVariablesPanel.render(state)
-//        customVariableDetailsPanel.render(state)
-//        screenElementsPanel.render(state)
-//        screenElementDetailsPanel.render(state)
-//        codePanels.values.forEach { it.render(state) }
-//        if (state.selectedElementIndex == null) {
-//            codePanels[FileType.KOTLIN]?.isVisible = true
-//        }
-//    }
+    private fun onCheckBoxClicked() {
+        isModify = true
+    }
+
+    fun applyRuleSettings() {
+        ScreenGeneratorComponent.getInstance(project).run {
+            this.settings = Settings(ruleList = ruleElementsPanel.listModel)
+            println(ruleElementsPanel.listModel)
+        }
+        isModify = false
+    }
 
     fun resetRules() {
 

@@ -123,7 +123,7 @@ class EditTextConfidentType(
         val editText = "EditText"
         val passwordText = "passwordEditText"
         var index = 0
-        val annotatorRuleModel = AnnotatorRuleModel(layoutFile.name, mutableListOf())
+        val annotatorRuleModel = AnnotatorRuleModel(layoutFile.name, mutableListOf(), layoutFile.text.hashCode())
 
         //получение ссылки на файл с первой строкой
 //        println(layoutFile.originalFile.virtualFile.path + ":1")

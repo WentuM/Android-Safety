@@ -6,40 +6,64 @@ import com.example.plugin.annotator.RuleModel
 import com.example.plugin.testAlgorithm.MainKt
 import com.intellij.execution.ui.ConsoleView
 import com.intellij.execution.ui.ConsoleViewContentType
+import com.intellij.lang.xml.XMLLanguage
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
+import com.intellij.psi.xml.XmlFile
 
-class AndroidComponentExportedType(
+class WebViewNeedListing(
     val project: Project,
-    val psiFile: PsiFile,
-    val consoleView: ConsoleView
+    val consoleView: ConsoleView,
+    val isNeedCheck: Boolean
 ) {
 
-    fun show() {
-        val pattern = "absolutePath"
+    private val foundIds = mutableListOf<String>()
+
+    fun show(psiFile: PsiFile) {
+//        firstTestXml()
         val annotatorRuleModel = AnnotatorRuleModel(psiFile.name, mutableListOf(), psiFile.text.hashCode())
 
-        val foundIndexes = MainKt().performKMPSearch(psiFile.text, pattern)
+        foundIds.forEach { pattern ->
 
-        foundIndexes.forEach {
-            //annotator
-            annotatorRuleModel.ruleList.add(
-                RuleModel(
-                    it,
-                    it + pattern.length,
-                    "Where textNoSuggestions?"
-                )
-            )
+            val foundIndexesPattern = MainKt().performKMPSearch(psiFile.text, pattern)
 
-            printConsoleView(psiFile, it)
+            if (foundIndexesPattern.isNotEmpty()) {
+                val foundFullPattern = MainKt().performKMPSearch(psiFile.text, "allowFileAccess = false")
+                if (foundFullPattern.isNotEmpty()) {
+                    foundIds.remove(pattern)
+                    println(foundFullPattern.toString())
+                } else {
+                    foundIndexesPattern.forEach {
+                        //annotator
+                        annotatorRuleModel.ruleList.add(
+                            RuleModel(
+                                it,
+                                it + pattern.length,
+                                "It is necessary to disable the ability to access external files using WebView, or rather, you must explicitly set allowFileAccess = false"
+                            )
+                        )
 
-            //if resolved
+                        printConsoleView(psiFile, it)
+                    }
+                }
+            }
+
+//        if resolved
 //            psiFile.viewProvider.document?.replaceString(it, it + pattern.length, "canonicalPath")
         }
 
         if (annotatorRuleModel.ruleList.isNotEmpty()) {
             AnnotatorRepository.annotatorFileNameList.add(annotatorRuleModel.fileName)
             AnnotatorRepository.annotatorRuleModelList.add(annotatorRuleModel)
+        }
+    }
+
+    fun firstTestXml(psiFile: PsiFile) {
+        val editText = "WebView"
+        //правильное нахождение айди у <WebView>
+        val document = psiFile.viewProvider.getPsi(XMLLanguage.INSTANCE) as XmlFile
+        document.rootTag?.findSubTags(editText)?.forEach {
+            it.getAttribute("android:id")?.value?.substring(5)?.let { it1 -> foundIds.add(it1) }
         }
     }
 
