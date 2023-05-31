@@ -72,7 +72,7 @@ fun main(args: Array<String>) {
 }
 
 class MainKt {
-    fun compilePatternArray(pattern: String): IntArray {
+    private fun compilePatternArray(pattern: String): IntArray {
         val patternLength = pattern.length
         var len = 0
         var i = 1

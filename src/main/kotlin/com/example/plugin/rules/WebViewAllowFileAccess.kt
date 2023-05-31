@@ -70,11 +70,12 @@ class WebViewAllowFileAccess(
     }
 
     fun firstTestXml(psiFile: PsiFile) {
-        val editText = "WebView"
+        val webView = "WebView"
+        val attributeName = "android:id"
         //правильное нахождение айди у <WebView>
         val document = psiFile.viewProvider.getPsi(XMLLanguage.INSTANCE) as XmlFile
-        document.rootTag?.findSubTags(editText)?.forEach {
-            it.getAttribute("android:id")?.value?.substring(5)?.let { it1 -> foundIds.add(it1) }
+        document.rootTag?.findSubTags(webView)?.forEach {
+            it.getAttribute(attributeName)?.value?.substring(5)?.let { it1 -> foundIds.add(it1) }
         }
     }
 

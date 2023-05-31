@@ -177,7 +177,7 @@ class AndroidSafetyCheck(
         psiDirectory.files.forEach {
             println("file: " + it.name)
             GetCanonicalPathType(project, it, consoleView).show()
-            if (webViewAllowFileAccess.isNeedCheck) webViewAllowFileAccess.show(it)
+//            if (webViewAllowFileAccess.isNeedCheck) webViewAllowFileAccess.show(it)
         }
         psiDirectory.subdirectories.forEach {
             getSubDirectories(it)

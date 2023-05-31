@@ -6,19 +6,8 @@ import com.example.plugin.annotator.RuleModel
 import com.example.plugin.testAlgorithm.MainKt
 import com.intellij.execution.ui.ConsoleView
 import com.intellij.execution.ui.ConsoleViewContentType
-import com.intellij.openapi.editor.event.DocumentEvent
-import com.intellij.openapi.editor.event.DocumentListener
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
-import com.intellij.psi.PsiMethod
-import com.intellij.psi.util.PsiTreeUtil
-import com.intellij.refactoring.suggested.endOffset
-import com.intellij.refactoring.suggested.startOffset
-import com.jetbrains.rd.util.string.PrettyPrinter
-import com.jetbrains.rd.util.string.println
-import org.jetbrains.kotlin.j2k.getContainingClass
-import org.jetbrains.uast.UFile
-import org.jetbrains.uast.toUElement
 
 class GetCanonicalPathType(
     val project: Project,
@@ -38,7 +27,7 @@ class GetCanonicalPathType(
                 RuleModel(
                     it,
                     it + pattern.length,
-                    "Where textNoSuggestions?"
+                    "При работе с файлами прежде, чем предоставлять пользователям доступ к файлам, необходимо проверять относится ли этот файл по-настоящему к нашему приложению. В таком случае использование absolutePath будем ошибочным, поскольку один файл в файловой системе может иметь бесконечное количество абсолютных путей. Однако канонический путь всегда будет уникальным. Следует использовать canonicalPath."
                 )
             )
 

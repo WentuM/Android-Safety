@@ -62,6 +62,21 @@
                     description="A test action that shows a notification">
                 <keyboard-shortcut first-keystroke="control alt p" keymap="$default"/>
             </action>
+
+            <action
+                    class="com.example.plugin.CheckAnAction"
+                    id="FormatAnAction"
+                    text="Format Safety"
+                    description="A test action that shows a notification">
+                <keyboard-shortcut first-keystroke="control alt o" keymap="$default"/>
+            </action>
+
+            <action
+                    class="com.example.plugin.customRule.CustomCreateRuleAction"
+                    id="CustomCreateRuleAnAction"
+                    text="Create Custom Rule"
+                    description="A test action that shows a notification">
+            </action>
             <add-to-group group-id="MainMenu" anchor="last"/>
         </group>
     </actions>
