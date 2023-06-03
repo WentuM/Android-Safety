@@ -24,4 +24,8 @@ class CustomCreateRuleDialog(project: Project) : DialogWrapper(true) {
     }
 
     override fun createCenterPanel() = panel
+
+    fun saveNewRule() {
+
+    }
 }

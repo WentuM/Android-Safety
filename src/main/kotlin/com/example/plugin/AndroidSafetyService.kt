@@ -19,11 +19,10 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.ToolWindowAnchor
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.psi.PsiDirectory
-import com.intellij.psi.PsiFile
 import java.util.*
 import java.util.stream.Collectors
 
-class AndroidSafetyCheck(
+class AndroidSafetyService(
     val project: Project
 ) {
 
