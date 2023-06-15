@@ -1,7 +1,7 @@
 package com.example.plugin.annotator
 
 data class AnnotatorRuleModel(
-    val fileName: String,
-    val ruleList: MutableList<RuleModel>,
-    val hashCodeFile: Int
+    var fileName: String = "",
+    var ruleList: MutableList<RuleModel> = mutableListOf(),
+    var hashCodeFile: Int = 0
 )

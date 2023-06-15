@@ -11,7 +11,8 @@ import javax.swing.JPanel
 
 class SettingsPanel(val project: Project) : JPanel() {
 
-    private val ruleElementsPanel = RuleElementsPanel(ScreenGeneratorComponent.getInstance(project).settings.ruleList, ::onCheckBoxClicked)
+    private val ruleListComponent = ScreenGeneratorComponent.getInstance(project).settings.ruleList
+    private val ruleElementsPanel = RuleElementsPanel(ruleListComponent, ::onCheckBoxClicked)
 
     var onHelpClicked: (() -> Unit)? = null
 
@@ -26,7 +27,7 @@ class SettingsPanel(val project: Project) : JPanel() {
         val contentPanel = JPanel().apply {
             layout = BorderLayout()
 
-            println(ScreenGeneratorComponent.getInstance(project).settings.ruleList)
+            println(ruleListComponent)
             add(ruleElementsPanel)
         }
 

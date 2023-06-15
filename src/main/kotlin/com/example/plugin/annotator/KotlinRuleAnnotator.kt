@@ -17,7 +17,6 @@ class KotlinRuleAnnotator: Annotator {
 
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
         val fileName = element.containingFile.name
-        // Ensure the Psi Element is an expression
 
         if (element.toString() != "KtFile: $fileName") {
             return
@@ -27,43 +26,9 @@ class KotlinRuleAnnotator: Annotator {
             return
         }
 
-
-//        if (element !is PsiLiteralExpression) {
-//            return
-//        }
-
         if (!AnnotatorRepository.annotatorFileNameList.contains(fileName)) {
             return
         }
-
-//        println(element.toString())
-//        println(element.containingFile.toString())
-        //MainActivity.kt
-//        println(element.containingFile.name)
-
-        // Ensure the Psi element contains a string that starts with the prefix and separator
-
-//        println(element.toString())
-
-
-        // Ensure the Psi element contains a string that starts with the prefix and separator
-//        val literalExpression = element as PsiLiteralExpression
-//        val value: String? = if (literalExpression.value is String) literalExpression.value as String else null
-//        if (value == null || !value.startsWith(SIMPLE_PREFIX_STR + SIMPLE_SEPARATOR_STR)) {
-//            return
-//        }
-//        println("something3")
-
-
-        // Define the text ranges (start is inclusive, end is exclusive)
-        // "simple:key"
-        //  01234567890
-
-        // Define the text ranges (start is inclusive, end is exclusive)
-        // "simple:key"
-        //  01234567890
-//        val prefixRange: TextRange = TextRange.from(element.textRange.startOffset, SIMPLE_PREFIX_STR.length + 1)
-//        val separatorRange: TextRange = TextRange.from(prefixRange.endOffset, SIMPLE_SEPARATOR_STR.length)
 
         val ruleModelList = AnnotatorRepository.getAnnotatorRuleModelsByFileName(fileName)
 
@@ -77,28 +42,5 @@ class KotlinRuleAnnotator: Annotator {
 //                .withFix(SimpleCreatePropertyQuickFix(key))
                 .create()
         }
-        // highlight "simple" prefix and ":" separator
-
-        // highlight "simple" prefix and ":" separator
-//        holder.newSilentAnnotation(HighlightSeverity.WARNING)
-//            .range(keyRange).textAttributes(DefaultLanguageHighlighterColors.KEYWORD).create()
-//        holder.newSilentAnnotation(HighlightSeverity.INFORMATION)
-//            .range(separatorRange).textAttributes(SimpleSyntaxHighlighter.SEPARATOR).create()
-
-
-        // Get the list of properties for given key
-
-
-        // Get the list of properties for given key
-//        val key: String = value.substring(SIMPLE_PREFIX_STR.length() + SIMPLE_SEPARATOR_STR.length())
-//        val properties: List<SimpleProperty> = SimpleUtil.findProperties(element.project, key)
-//        if (properties.isEmpty()) {
-//        println(keyRange)
-
-//        } else {
-//            // Found at least one property, force the text attributes to Simple syntax value character
-//            holder.newSilentAnnotation(HighlightSeverity.INFORMATION)
-//                .range(keyRange).textAttributes(DefaultLanguageHighlighterColors.KEYWORD).create()
-//        }
     }
 }

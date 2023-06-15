@@ -1,13 +1,12 @@
 package com.example.plugin
 
 import com.example.plugin.annotator.AnnotatorRepository
+import com.example.plugin.annotator.AnnotatorRuleModel
 import com.example.plugin.data.ScreenGeneratorComponent
 import com.example.plugin.models.Directory
 import com.example.plugin.models.Module
 import com.example.plugin.repository.SourceRootRepository
-import com.example.plugin.rules.GetCanonicalPathType
-import com.example.plugin.rules.LAYOUT_DIRECTORY
-import com.example.plugin.rules.WebViewAllowFileAccess
+import com.example.plugin.rules.*
 import com.intellij.execution.filters.TextConsoleBuilderFactory
 import com.intellij.execution.ui.ConsoleView
 import com.intellij.execution.ui.ConsoleViewContentType
@@ -23,10 +22,13 @@ import java.util.*
 import java.util.stream.Collectors
 
 class AndroidSafetyService(
-    val project: Project
+    val project: Project,
+    private val isNeedFix: Boolean
 ) {
 
     private lateinit var consoleView: ConsoleView
+    private val screenGeneratorComponent = ScreenGeneratorComponent.getInstance(project)
+    private var customRuleModels: List<RuleRealization>
 
     companion object {
         private const val BEGIN_CONSOLE_MESSAGE = "Start of Android Safety Analysis...\n"
@@ -34,13 +36,32 @@ class AndroidSafetyService(
     }
 
     private var webViewAllowFileAccess: WebViewAllowFileAccess
+    private var getCanonicalPathType: GetCanonicalPathType
+
+    private var kotlinRules: MutableList<RuleRealization> = mutableListOf()
 
     init {
+        AnnotatorRepository.annotatorFileNameList.clear()
+        AnnotatorRepository.annotatorRuleModelList.clear()
         createConsole()
-        val ruleListForCheck = ScreenGeneratorComponent.getInstance(project).settings.ruleList
-        webViewAllowFileAccess = WebViewAllowFileAccess(project, consoleView, ruleListForCheck[0].isSelected)
         printConsoleView(BEGIN_CONSOLE_MESSAGE)
+        val ruleListForCheck = screenGeneratorComponent.settings.ruleList
+
+        customRuleModels = screenGeneratorComponent.customRuleModels.map {
+            CustomRuleRealization(it, consoleView, isNeedFix)
+        }
+
+        webViewAllowFileAccess = WebViewAllowFileAccess(project, consoleView, ruleListForCheck[0].isSelected, isNeedFix)
+        getCanonicalPathType = GetCanonicalPathType(project, consoleView, ruleListForCheck[1].isSelected, isNeedFix)
+        kotlinRules.apply {
+            add(getCanonicalPathType)
+            add(webViewAllowFileAccess)
+        }
+
         getAllFiles()
+
+        //
+        screenGeneratorComponent.settingsRules = AnnotatorRepository.annotatorRuleModelList
         printConsoleView(END_CONSOLE_MESSAGE)
 
 //        EditTextConfidentType(project, consoleView).show()
@@ -74,8 +95,10 @@ class AndroidSafetyService(
             val listFileTextLayout = resourcesSubdirectory?.getFilesText()
             listFileTextLayout?.forEach {
 //                firstTestXml(it)
-                if (webViewAllowFileAccess.isNeedCheck) webViewAllowFileAccess.firstTestXml(it)
+                webViewAllowFileAccess.firstTestXml(it)
             }
+
+//            kotlinRules.add(webViewAllowFileAccess)
 
             findCodeSubdirectory(
                 Module(
@@ -143,40 +166,24 @@ class AndroidSafetyService(
     private fun findCodeSubdirectory(module: Module) {
         val sourceRootRepository = SourceRootRepository(project)
         sourceRootRepository.findCodeSourceRoot(module)?.directory?.run {
-            //рекурсивно пройти по всем файлам всех директорий
-//            println("subdirectories:  " + psiDirectory.subdirectories.get(0).name.toString())
-
-
             getSubDirectories(psiDirectory)
-
-
-//            psiDirectory.subdirectories.forEach {
-//                println("begin: ")
-//                println(it.name)
-//                println("end: ")
-//            }
-            getFilesText().forEach {
-//                println("text - " + it.text)
-                it.text
-//                println("methoooods   "+ it.getContainingClass()?.findMethodsByName("onCreate", false)?.size)
-
-                //правильный хэшкод при изменении файлов
-//                println("hashcode " + it.text.hashCode())
-                it.text.hashCode()
-//                val a = it.toUElement(UCallExpression::class.java) as UMethod
-//                println("ватофак - " + a.uastBody.toString())
-            }
-//            psiDirectory.subdirectories.forEach {
-//                println("lolo"+ Directory(project, it).getFilesText())
-//            }
         }
     }
 
     private fun getSubDirectories(psiDirectory: PsiDirectory) {
-        psiDirectory.files.forEach {
-            println("file: " + it.name)
-            GetCanonicalPathType(project, it, consoleView).show()
-//            if (webViewAllowFileAccess.isNeedCheck) webViewAllowFileAccess.show(it)
+        psiDirectory.files.forEach { psiFile ->
+            val hashCode = screenGeneratorComponent.getHashCodeFileByFileName(psiFile.name)
+
+            if (hashCode != psiFile.text.hashCode()) {
+                val annotatorRuleModel =
+                    AnnotatorRuleModel(psiFile.name, mutableListOf(), psiFile.text.hashCode())
+                kotlinRules.forEach { kotlinRule ->
+                    kotlinRule.analyze(psiFile, annotatorRuleModel)
+                }
+            } else {
+                screenGeneratorComponent.getAnnotatorRuleModelsByFileName(psiFile.name)
+                    ?.let { AnnotatorRepository.annotatorRuleModelList.add(it) }
+            }
         }
         psiDirectory.subdirectories.forEach {
             getSubDirectories(it)

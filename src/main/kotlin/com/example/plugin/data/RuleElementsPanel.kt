@@ -1,6 +1,10 @@
 package com.example.plugin.data
 
+import com.example.plugin.util.constraintsLeft
+import com.example.plugin.util.constraintsRight
 import com.intellij.ui.IdeBorderFactory
+import java.awt.Dimension
+import java.awt.GridBagLayout
 import java.awt.GridLayout
 import javax.swing.*
 
@@ -10,16 +14,14 @@ class RuleElementsPanel(val ruleList: MutableList<RuleElement>, private val onCh
 
     init {
         border = IdeBorderFactory.createTitledBorder("Choose Rules", false)
-        layout = GridLayout(5, 1).apply {
-            vgap = 2
-        }
+        layout = GridBagLayout()
 
         addNewElement()
     }
 
     private fun listModelByDefault(): List<RuleElement> {
         val listModel = mutableListOf<RuleElement>().apply {
-            add(RuleElement(0, "Rule 1 -", true))
+            add(RuleElement(0, "Rule 1 - ", true))
             add(RuleElement(1, "Rule 2 -", true))
             add(RuleElement(2, "Rule 3 -", true))
             add(RuleElement(3, "Rule 4 -", true))
@@ -29,13 +31,25 @@ class RuleElementsPanel(val ruleList: MutableList<RuleElement>, private val onCh
     }
 
     private fun addNewElement() {
+        var y = 0
         listModel.forEach { ruleElement ->
-            add(JCheckBox(ruleElement.name, ruleElement.isSelected).apply {
+            val currentJButton = JButton("Delete")
+            val currentJCheckBox = JCheckBox(ruleElement.name, ruleElement.isSelected)
+
+            currentJButton.addActionListener {
+                remove(currentJButton)
+                remove(currentJCheckBox)
+                listModel.remove(ruleElement)
+            }
+
+            add(currentJButton, constraintsLeft(0, y))
+            add(currentJCheckBox.apply {
                 addActionListener {
                     ruleElement.isSelected = !ruleElement.isSelected
                     onCheckBoxClicked.invoke()
                 }
-            })
+            }, constraintsRight(1, y))
+            y++
         }
     }
 

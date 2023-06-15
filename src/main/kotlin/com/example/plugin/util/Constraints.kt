@@ -7,7 +7,7 @@ fun constraintsLeft(x: Int, y: Int) = GridBagConstraints().apply {
     weightx = 0.15
     gridx = x
     gridy = y
-    insets = Insets(0, 8, 0, 0)
+    insets = Insets(10, 8, 0, 0)
     fill = GridBagConstraints.HORIZONTAL
 }
 
@@ -16,5 +16,6 @@ fun constraintsRight(x: Int, y: Int) = GridBagConstraints().apply {
     gridx = x
     gridy = y
     gridwidth = 2
+    insets = Insets(10, 8, 0, 0)
     fill = GridBagConstraints.HORIZONTAL
 }

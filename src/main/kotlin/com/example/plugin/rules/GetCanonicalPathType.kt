@@ -11,44 +11,65 @@ import com.intellij.psi.PsiFile
 
 class GetCanonicalPathType(
     val project: Project,
-    val psiFile: PsiFile,
-    val consoleView: ConsoleView
-) {
+    val consoleView: ConsoleView,
+    val isNeedCheck: Boolean,
+    val isNeedFix: Boolean
+) : RuleRealization {
 
-    fun show() {
-        val pattern = "absolutePath"
-        val annotatorRuleModel = AnnotatorRuleModel(psiFile.name, mutableListOf(), psiFile.text.hashCode())
+    private val ruleMessage =
+        "When working with files, before giving users access to files, it is necessary to check " +
+                "whether this file is really related to our application. In this case, the use of absolutePath " +
+                "will be erroneous, since one file in the file system can have an infinite number of absolute paths. " +
+                "However, the canonical path will always be unique. You should use canonicalPath."
 
-        val foundIndexes = MainKt().performKMPSearch(psiFile.text, pattern)
+    override fun analyze(psiFile: PsiFile, annotatorRuleModel: AnnotatorRuleModel) {
+        if (isNeedCheck) {
+            val pattern = "absolutePath"
 
-        foundIndexes.forEach {
-            //annotator
-            annotatorRuleModel.ruleList.add(
-                RuleModel(
-                    it,
-                    it + pattern.length,
-                    "При работе с файлами прежде, чем предоставлять пользователям доступ к файлам, необходимо проверять относится ли этот файл по-настоящему к нашему приложению. В таком случае использование absolutePath будем ошибочным, поскольку один файл в файловой системе может иметь бесконечное количество абсолютных путей. Однако канонический путь всегда будет уникальным. Следует использовать canonicalPath."
+            val currentRuleModelList = mutableListOf<RuleModel>()
+
+            val foundIndexes = MainKt().performKMPSearch(psiFile.text, pattern)
+
+            foundIndexes.forEach {
+
+                val consoleMessage = "\n" +
+                        psiFile.originalFile.virtualFile.path + ":" + (psiFile.viewProvider.document.getLineNumber(
+                    it
+                ) + 1) + " $ruleMessage"
+                //annotator
+                currentRuleModelList.add(
+                    RuleModel(
+                        it,
+                        it + pattern.length,
+                        ruleMessage,
+                        consoleMessage
+                    )
                 )
-            )
 
-            printConsoleView(psiFile, it)
+                printConsoleView(consoleMessage)
 
-            //if resolved
-//            psiFile.viewProvider.document?.replaceString(it, it + pattern.length, "canonicalPath")
-        }
+                //if resolved
+                if (isNeedFix) {
+                    psiFile.viewProvider.document?.replaceString(it, it + pattern.length, "canonicalPath")
+                }
+            }
 
-        if (annotatorRuleModel.ruleList.isNotEmpty()) {
-            AnnotatorRepository.annotatorFileNameList.add(annotatorRuleModel.fileName)
-            AnnotatorRepository.annotatorRuleModelList.add(annotatorRuleModel)
+            if (currentRuleModelList.isNotEmpty()) {
+                if (!AnnotatorRepository.annotatorFileNameList.contains(psiFile.name)) {
+                    AnnotatorRepository.annotatorFileNameList.add(psiFile.name)
+                }
+                val findRuleModelList = AnnotatorRepository.getAnnotatorRuleModelsByFileName(psiFile.name)
+                if (findRuleModelList.isEmpty()) {
+                    annotatorRuleModel.ruleList.addAll(currentRuleModelList)
+                    AnnotatorRepository.annotatorRuleModelList.add(annotatorRuleModel)
+                } else {
+                    AnnotatorRepository.updateAnnotatorRuleModelsByFileName(psiFile.name, currentRuleModelList)
+                }
+            }
         }
     }
 
-    private fun printConsoleView(layoutFile: PsiFile, passwordIndex: Int) {
-        consoleView.print("\n" +
-            layoutFile.originalFile.virtualFile.path + ":" + (layoutFile.viewProvider.document.getLineNumber(
-                passwordIndex
-            ) + 1) + " При работе с файлами прежде, чем предоставлять пользователям доступ к файлам, необходимо проверять относится ли этот файл по-настоящему к нашему приложению. В таком случае использование absolutePath будем ошибочным, поскольку один файл в файловой системе может иметь бесконечное количество абсолютных путей. Однако канонический путь всегда будет уникальным. Следует использовать canonicalPath.",
-            ConsoleViewContentType.NORMAL_OUTPUT
-        )
+    private fun printConsoleView(consoleMessage: String) {
+        consoleView.print(consoleMessage, ConsoleViewContentType.NORMAL_OUTPUT)
     }
 }

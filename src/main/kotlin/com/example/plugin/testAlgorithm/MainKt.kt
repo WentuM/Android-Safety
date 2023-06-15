@@ -105,6 +105,11 @@ class MainKt {
                 patternIndex++
                 textIndex++
             }
+            //test
+            //если они схожи, то тоже считается похожим
+//            similarity(pattern, text[textIndex-patternIndex])
+//            text.substring(textIndex, textIndex - patternIndex)
+                //
             if (patternIndex == pattern.length) {
                 foundIndexes.add(textIndex - patternIndex)
                 patternIndex = compliedPatternArray[patternIndex - 1]

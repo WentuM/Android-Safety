@@ -19,8 +19,6 @@ class XmlRuleAnnotator: Annotator {
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
         val fileName = element.containingFile.name
 
-//        println(element)
-
         if (!element.isValid) {
             return
         }

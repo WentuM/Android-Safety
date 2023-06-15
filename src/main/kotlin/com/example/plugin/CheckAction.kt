@@ -32,7 +32,7 @@ class CheckAnAction : AnAction() {
 
 
         WriteCommandAction.runWriteCommandAction(e.project!!, COMMAND_NAME, GROUP_ID, {
-            AndroidSafetyService(e.project!!)
+            AndroidSafetyService(e.project!!, false)
         })
     }
 }
