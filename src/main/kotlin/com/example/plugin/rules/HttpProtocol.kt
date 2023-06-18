@@ -9,7 +9,7 @@ import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 
-class GetCanonicalPathType(
+class HttpProtocol(
     val project: Project,
     val consoleView: ConsoleView,
     val isNeedCheck: Boolean,
@@ -17,16 +17,14 @@ class GetCanonicalPathType(
 ) : RuleRealization {
 
     private val ruleMessage =
-        "When working with files, before giving users access to files, it is necessary to check " +
-                "whether this file is really related to our application. In this case, the use of absolutePath " +
-                "will be erroneous, since one file in the file system can have an infinite number of absolute paths. " +
-                "However, the canonical path will always be unique. You should use canonicalPath."
+        "Using the HTTPS protocol - You must use HTTPS instead of HTTP to communicate with servers because there is a potential risk of services being spoofed by attackers. This protocol allows you to encrypt data that is sent between your device and a website or service. \" +\n" +
+                "                \"You must use the HTTPS protocol in the URLs used to make requests to the server. Also this https should be used in the security protocol."
 
-    private val fixMessage = "canonicalPath"
+    private val fixMessage = "https"
 
     override fun analyze(psiFile: PsiFile, annotatorRuleModel: AnnotatorRuleModel) {
         if (isNeedCheck) {
-            val pattern = "absolutePath"
+            val pattern = "http"
 
             var index = 0
             var currentPsiFileTextLength = psiFile.viewProvider.document.textLength

@@ -12,51 +12,79 @@ import com.intellij.psi.PsiFile
 class CustomRuleRealization(
     private val customRuleModel: CustomRuleModel,
     private val consoleView: ConsoleView,
-    private val isNeedCheck: Boolean
-): RuleRealization {
+    private val isNeedCheck: Boolean,
+    private val isNeedFix: Boolean
+) : RuleRealization {
+
+    private val ruleMessage = customRuleModel.messageRecommendation
 
     override fun analyze(psiFile: PsiFile, annotatorRuleModel: AnnotatorRuleModel) {
-        val pattern = customRuleModel.templateFindError
-        val annotatorRuleModel = AnnotatorRuleModel(psiFile.name, mutableListOf(), psiFile.text.hashCode())
+        if (isNeedCheck) {
+            val pattern = customRuleModel.templateFindError
 
-        val foundIndexes = MainKt().performKMPSearch(psiFile.text, pattern)
+            var index = 0
+            var currentPsiFileTextLength = psiFile.viewProvider.document.textLength
+            var lastStartOffset = 0
 
-        foundIndexes.forEach {
-            //annotator
-            annotatorRuleModel.ruleList.add(
-                RuleModel(
-                    it,
-                    it + pattern.length,
-                    customRuleModel.messageRecommendation
-                )
-            )
+            val currentRuleModelList = mutableListOf<RuleModel>()
 
-            printConsoleView(psiFile, it)
+            val foundIndexes = MainKt().performKMPSearch(psiFile.text, pattern)
 
-            //if resolved
+            foundIndexes.forEach {
 
-            if (isNeedCheck) {
-                psiFile.viewProvider.document?.replaceString(
-                    it,
-                    it + pattern.length,
-                    customRuleModel.templateCorrectError
-                )
+                val consoleMessage = "\n" +
+                        psiFile.originalFile.virtualFile.path + ":" + (psiFile.viewProvider.document.getLineNumber(
+                    it
+                ) + 1) + " $ruleMessage"
+                //annotator
+
+                if (isNeedFix) {
+                    if (it > lastStartOffset) {
+                        psiFile.viewProvider.document?.replaceString(
+                            it + index,
+                            it + pattern.length + index,
+                            customRuleModel.templateCorrectError
+                        )
+                        index += (psiFile.viewProvider.document.textLength - currentPsiFileTextLength)
+                    } else {
+                        psiFile.viewProvider.document?.replaceString(
+                            it,
+                            it + pattern.length,
+                            customRuleModel.templateCorrectError
+                        )
+                    }
+                    lastStartOffset = it
+                    currentPsiFileTextLength = psiFile.viewProvider.document.textLength
+                } else {
+                    currentRuleModelList.add(
+                        RuleModel(
+                            it,
+                            it + pattern.length,
+                            ruleMessage,
+                            consoleMessage,
+                            customRuleModel.templateCorrectError
+                        )
+                    )
+                }
+
+                printConsoleView(consoleMessage)
             }
-        }
 
-        if (annotatorRuleModel.ruleList.isNotEmpty()) {
-            AnnotatorRepository.annotatorFileNameList.add(annotatorRuleModel.fileName)
-            AnnotatorRepository.annotatorRuleModelList.add(annotatorRuleModel)
+            if (!isNeedFix) {
+                if (currentRuleModelList.isNotEmpty()) {
+                    val findRuleModelList = AnnotatorRepository.getAnnotatorRuleModelsByFileName(psiFile.name)
+                    if (findRuleModelList.isEmpty()) {
+                        annotatorRuleModel.ruleList.addAll(currentRuleModelList)
+                        AnnotatorRepository.annotatorRuleModelList.add(annotatorRuleModel)
+                    } else {
+                        AnnotatorRepository.updateAnnotatorRuleModelsByFileName(psiFile.name, currentRuleModelList)
+                    }
+                }
+            }
         }
     }
 
-    private fun printConsoleView(layoutFile: PsiFile, passwordIndex: Int) {
-        consoleView.print(
-            "\n" +
-                    layoutFile.originalFile.virtualFile.path + ":" + (layoutFile.viewProvider.document.getLineNumber(
-                passwordIndex
-            ) + 1) + " При работе с файлами прежде, чем предоставлять пользователям доступ к файлам, необходимо проверять относится ли этот файл по-настоящему к нашему приложению. В таком случае использование absolutePath будем ошибочным, поскольку один файл в файловой системе может иметь бесконечное количество абсолютных путей. Однако канонический путь всегда будет уникальным. Следует использовать canonicalPath.",
-            ConsoleViewContentType.NORMAL_OUTPUT
-        )
+    private fun printConsoleView(consoleMessage: String) {
+        consoleView.print(consoleMessage, ConsoleViewContentType.NORMAL_OUTPUT)
     }
 }

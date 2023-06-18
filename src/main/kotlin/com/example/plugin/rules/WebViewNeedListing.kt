@@ -14,14 +14,14 @@ import com.intellij.psi.xml.XmlFile
 class WebViewNeedListing(
     val project: Project,
     val consoleView: ConsoleView,
-    val isNeedCheck: Boolean
-) {
+    val isNeedCheck: Boolean,
+    val isNeedFix: Boolean
+): RuleRealization {
 
     private val foundIds = mutableListOf<String>()
 
-    fun show(psiFile: PsiFile) {
+    override fun analyze(psiFile: PsiFile, annotatorRuleModel: AnnotatorRuleModel) {
 //        firstTestXml()
-        val annotatorRuleModel = AnnotatorRuleModel(psiFile.name, mutableListOf(), psiFile.text.hashCode())
 
         foundIds.forEach { pattern ->
 
@@ -53,7 +53,6 @@ class WebViewNeedListing(
         }
 
         if (annotatorRuleModel.ruleList.isNotEmpty()) {
-            AnnotatorRepository.annotatorFileNameList.add(annotatorRuleModel.fileName)
             AnnotatorRepository.annotatorRuleModelList.add(annotatorRuleModel)
         }
     }

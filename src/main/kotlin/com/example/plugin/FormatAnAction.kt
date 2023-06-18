@@ -7,11 +7,12 @@ import com.intellij.openapi.command.WriteCommandAction
 private const val COMMAND_NAME = "Android Safety"
 private const val GROUP_ID = "ANDROID_SAFETY_ID"
 
-class CheckAnAction : AnAction() {
+class FormatAnAction : AnAction() {
 
     override fun actionPerformed(e: AnActionEvent) {
+
         WriteCommandAction.runWriteCommandAction(e.project!!, COMMAND_NAME, GROUP_ID, {
-            AndroidSafetyService(e.project!!, false)
+            AndroidSafetyService(e.project!!, true)
         })
     }
 }

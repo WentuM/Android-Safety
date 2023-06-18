@@ -14,14 +14,13 @@ import com.intellij.psi.xml.XmlFile
 class EditTextAutoFill(
     val project: Project,
     val consoleView: ConsoleView,
-    val isNeedCheck: Boolean
-) {
+    val isNeedCheck: Boolean,
+    val isNeedFix: Boolean
+): RuleRealization {
 
     private val foundIds = mutableListOf<String>()
 
-    fun show(psiFile: PsiFile) {
-//        firstTestXml()
-        val annotatorRuleModel = AnnotatorRuleModel(psiFile.name, mutableListOf(), psiFile.text.hashCode())
+    override fun analyze(psiFile: PsiFile, annotatorRuleModel: AnnotatorRuleModel) {
 
         foundIds.forEach { pattern ->
 
@@ -53,7 +52,6 @@ class EditTextAutoFill(
         }
 
         if (annotatorRuleModel.ruleList.isNotEmpty()) {
-            AnnotatorRepository.annotatorFileNameList.add(annotatorRuleModel.fileName)
             AnnotatorRepository.annotatorRuleModelList.add(annotatorRuleModel)
         }
     }

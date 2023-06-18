@@ -9,7 +9,7 @@ import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 
-class GetCanonicalPathType(
+class WebViewExpectedUrls(
     val project: Project,
     val consoleView: ConsoleView,
     val isNeedCheck: Boolean,
@@ -17,16 +17,15 @@ class GetCanonicalPathType(
 ) : RuleRealization {
 
     private val ruleMessage =
-        "When working with files, before giving users access to files, it is necessary to check " +
-                "whether this file is really related to our application. In this case, the use of absolutePath " +
-                "will be erroneous, since one file in the file system can have an infinite number of absolute paths. " +
-                "However, the canonical path will always be unique. You should use canonicalPath."
+        "Checking expected URLs - To display sites in a WebView, URLs must be passed through an Intent. This list may include malicious addresses that the developer does not expect to see. \" +\n" +
+                "\"To protect against unexpected sites, you need to create a list of addresses that should be intercepted and get into the WebView. It is necessary in the shouldOverrideUrlLoading() method of the WebViewClient to match incoming URLs with a list of expected addresses."
 
-    private val fixMessage = "canonicalPath"
+    private val fixMessage = "override fun shouldOverrideUrlLoading() { } "
 
     override fun analyze(psiFile: PsiFile, annotatorRuleModel: AnnotatorRuleModel) {
         if (isNeedCheck) {
-            val pattern = "absolutePath"
+            val pattern = "WebViewClient"
+            val pattern2 = "shouldOverrideUrlLoading()"
 
             var index = 0
             var currentPsiFileTextLength = psiFile.viewProvider.document.textLength

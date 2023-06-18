@@ -13,8 +13,8 @@ import com.intellij.util.xmlb.XmlSerializerUtil
 import java.io.Serializable
 
 @State(
-    name = "ScreenGeneratorComponent",
-    storages = [Storage(value = "screenGeneratorComponent.xml")]
+    name = "AndroidSafetyNeed",
+    storages = [Storage(value = "androidSafety.xml")]
 )
 class ScreenGeneratorComponent : Serializable, PersistentStateComponent<ScreenGeneratorComponent> {
 
@@ -38,15 +38,15 @@ class ScreenGeneratorComponent : Serializable, PersistentStateComponent<ScreenGe
         return settingsRules.find { it.fileName == fileName }?.hashCodeFile ?: 0
     }
 
-    fun getRuleModelsByFileName(fileName: String): List<RuleModel> {
-        return settingsRules.find { it.fileName == fileName }?.ruleList ?: emptyList()
-    }
-
     fun getAnnotatorRuleModelsByFileName(fileName: String): AnnotatorRuleModel? {
         return settingsRules.find { it.fileName == fileName }
     }
 
-    fun updateAnnotatorRuleModelsByFileName(fileName: String, newRuleModelList: List<RuleModel>) {
-        settingsRules.find { it.fileName == fileName }?.ruleList?.addAll(newRuleModelList)
+    fun removeCustomRuleByName(removeCustomList: MutableList<RuleElement>) {
+        removeCustomList.forEach { ruleElement ->
+            customRuleModels.removeIf { customRuleModel ->
+                customRuleModel.id == ruleElement.id
+            }
+        }
     }
 }

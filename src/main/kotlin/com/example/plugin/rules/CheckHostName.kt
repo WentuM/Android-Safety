@@ -9,7 +9,7 @@ import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 
-class GetCanonicalPathType(
+class CheckHostName(
     val project: Project,
     val consoleView: ConsoleView,
     val isNeedCheck: Boolean,
@@ -17,16 +17,15 @@ class GetCanonicalPathType(
 ) : RuleRealization {
 
     private val ruleMessage =
-        "When working with files, before giving users access to files, it is necessary to check " +
-                "whether this file is really related to our application. In this case, the use of absolutePath " +
-                "will be erroneous, since one file in the file system can have an infinite number of absolute paths. " +
-                "However, the canonical path will always be unique. You should use canonicalPath."
+        "Server hostnames must be checked during SSL/TLS connections - To protect against man-in-the-middle attacks, you need to make sure that the server provides the correct certificate. The data related to the hostname must match the hostname of the server. \" +\n" +
+                "                \"For example, when using the okhttp library, you should not override the hostnameVerifier object, since the library already uses a built-in secure one. Thus, the following construct should be avoided in code: builder.hostnameVerifier(object: HostnameVerifier { override fun verify(): Boolean { return true} })"
 
-    private val fixMessage = "canonicalPath"
+    private val fixMessage = "builder.hostnameVerifier(object: HostnameVerifier { override fun verify(): Boolean { return true} })"
 
     override fun analyze(psiFile: PsiFile, annotatorRuleModel: AnnotatorRuleModel) {
         if (isNeedCheck) {
-            val pattern = "absolutePath"
+            val pattern = "hostnameVerifier"
+            val returnPattern = "return true"
 
             var index = 0
             var currentPsiFileTextLength = psiFile.viewProvider.document.textLength

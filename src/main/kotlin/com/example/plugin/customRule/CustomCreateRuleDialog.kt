@@ -23,9 +23,10 @@ class CustomCreateRuleDialog(project: Project) : DialogWrapper(true) {
     }
 
     override fun doOKAction() {
+        val id = screenGeneratorComponent.settings.ruleList.last().id + 1
         screenGeneratorComponent.settings.ruleList.add(
             RuleElement(
-                screenGeneratorComponent.settings.ruleList.last().id + 1,
+                id,
                 panel.nameTextField.text + ": ${panel.messageRecommendationField.text}",
                 isSelected = true,
                 isCustomRule = true
@@ -33,6 +34,7 @@ class CustomCreateRuleDialog(project: Project) : DialogWrapper(true) {
         )
         panel.apply {
             val customRuleModel = CustomRuleModel(
+                id,
                 nameTextField.text,
                 templateFindErrorField.text,
                 templateCorrectErrorField.text,
@@ -41,6 +43,7 @@ class CustomCreateRuleDialog(project: Project) : DialogWrapper(true) {
             )
             screenGeneratorComponent.customRuleModels.add(customRuleModel)
         }
+        close(OK_EXIT_CODE)
     }
 
     override fun createCenterPanel() = panel

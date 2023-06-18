@@ -14,14 +14,14 @@ import com.intellij.psi.xml.XmlFile
 class WebViewAssetLoader(
     val project: Project,
     val consoleView: ConsoleView,
-    val isNeedCheck: Boolean
-) {
+    val isNeedCheck: Boolean,
+    val isNeedFix: Boolean
+): RuleRealization {
 
     private val foundIds = mutableListOf<String>()
 
-    fun show(psiFile: PsiFile) {
+    override fun analyze(psiFile: PsiFile, annotatorRuleModel: AnnotatorRuleModel) {
 //        firstTestXml()
-        val annotatorRuleModel = AnnotatorRuleModel(psiFile.name, mutableListOf(), psiFile.text.hashCode())
 
         foundIds.forEach { pattern ->
 
@@ -31,7 +31,6 @@ class WebViewAssetLoader(
                 val foundFullPattern = MainKt().performKMPSearch(psiFile.text, "allowFileAccess = false")
                 if (foundFullPattern.isNotEmpty()) {
                     foundIds.remove(pattern)
-                    println(foundFullPattern.toString())
                 } else {
                     foundIndexesPattern.forEach {
                         //annotator
@@ -53,7 +52,6 @@ class WebViewAssetLoader(
         }
 
         if (annotatorRuleModel.ruleList.isNotEmpty()) {
-            AnnotatorRepository.annotatorFileNameList.add(annotatorRuleModel.fileName)
             AnnotatorRepository.annotatorRuleModelList.add(annotatorRuleModel)
         }
     }

@@ -1,25 +1,8 @@
-<!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
-    <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
     <id>com.example.plugin</id>
+    <name>AndroidSafety</name>
+    <vendor email="kpfu" url="https://www.yourcompany.com">AndroidSafety</vendor>
 
-    <!-- Public plugin name should be written in Title Case.
-         Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
-    <name>Plugin</name>
-
-    <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
-    <vendor email="support@yourcompany.com" url="https://www.yourcompany.com">YourCompany</vendor>
-
-    <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
-         Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
-         Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
-    <description><![CDATA[
-    Enter short description for your plugin here.<br>
-    <em>most HTML tags may be used</em>
-  ]]></description>
-
-    <!-- Product and plugin compatibility requirements.
-         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
     <depends>com.intellij.modules.platform</depends>
 
     <depends>com.intellij.modules.lang</depends>
@@ -40,13 +23,6 @@
                 instance="com.example.plugin.data.SettingsConfigurable">
         </projectConfigurable>
         <projectService serviceInterface="com.example.plugin.data.ScreenGeneratorComponent" serviceImplementation="com.example.plugin.data.ScreenGeneratorComponent"/>
-<!--        <defaultProjectTypeProvider type="Android"/>-->
-        <!--        <toolWindow id="Android Safety"-->
-        <!--                    anchor="bottom"-->
-        <!--                    icon="AllIcons.General.Modified"-->
-        <!--                    canCloseContents="true"-->
-        <!--                    factoryClass="com.example.plugin.toolwindow.MyToolWindowFactory">-->
-        <!--        </toolWindow>-->
     </extensions>
 
     <actions>
@@ -64,7 +40,7 @@
             </action>
 
             <action
-                    class="com.example.plugin.CheckAnAction"
+                    class="com.example.plugin.FormatAnAction"
                     id="FormatAnAction"
                     text="Format Safety"
                     description="A test action that shows a notification">
@@ -75,6 +51,13 @@
                     class="com.example.plugin.customRule.CustomCreateRuleAction"
                     id="CustomCreateRuleAnAction"
                     text="Create Custom Rule"
+                    description="A test action that shows a notification">
+            </action>
+
+            <action
+                    class="com.example.plugin.HideRecommendationsAnAction"
+                    id="HideRecommendations"
+                    text="Hide Recommendations"
                     description="A test action that shows a notification">
             </action>
             <add-to-group group-id="MainMenu" anchor="last"/>

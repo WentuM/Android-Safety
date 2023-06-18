@@ -25,11 +25,13 @@ class WebViewAllowFileAccess(
 
     private val foundIds = mutableListOf<String>()
 
+    private val ruleMessage =
+        "You need to disable the ability to access external files using the WebView. Here it is possible by setting the WebView settings attributes “allowFileAccess = false”, “allowContentAccess = false”."
+
     override fun analyze(psiFile: PsiFile, annotatorRuleModel: AnnotatorRuleModel) {
         if (isNeedCheck) {
-//        firstTestXml()
-            //вынести, чтобы один файл добавлялся, а к нему уже список правил
-            val annotatorRuleModel = AnnotatorRuleModel(psiFile.name, mutableListOf(), psiFile.text.hashCode())
+
+            val currentRuleModelList = mutableListOf<RuleModel>()
 
             foundIds.removeIf { pattern ->
 
@@ -38,36 +40,52 @@ class WebViewAllowFileAccess(
                 val foundIndexesPattern = MainKt().performKMPSearch(psiFile.text, pattern)
 
                 if (foundIndexesPattern.isNotEmpty()) {
-                    val foundFullPattern = MainKt().performKMPSearch(psiFile.text, "allowFileAccess = false")
+                    val foundFullPattern = MainKt().performKMPSearch(psiFile.text, allowFileAccessTemplate)
                     if (foundFullPattern.isNotEmpty()) {
                         removeFlag = true
-                        println(foundFullPattern.toString())
                     } else {
 
                         val firstFoundIndex = foundIndexesPattern.first()
-                        //annotator
-                        annotatorRuleModel.ruleList.add(
-                            RuleModel(
-                                firstFoundIndex,
-                                firstFoundIndex + pattern.length,
-                                "It is necessary to disable the ability to access external files using WebView, or rather, you must explicitly set allowFileAccess = false"
+
+                        val consoleMessage = "\n" +
+                                psiFile.originalFile.virtualFile.path + ":" + (psiFile.viewProvider.document.getLineNumber(
+                            firstFoundIndex
+                        ) + 1) + " $ruleMessage"
+
+                        val fixMessage =
+                            "\n$pattern.settings.allowFileAccess = false\n$pattern.settings.allowContentAccess=false"
+
+                        if (isNeedFix) {
+                            psiFile.viewProvider.document?.replaceString(firstFoundIndex, firstFoundIndex + pattern.length, fixMessage)
+                        } else {
+                            currentRuleModelList.add(
+                                RuleModel(
+                                    firstFoundIndex,
+                                    firstFoundIndex + pattern.length,
+                                    ruleMessage,
+                                    consoleMessage,
+//                                    fixMessage
+                                )
                             )
-                        )
+                        }
+                        printConsoleView(consoleMessage)
 
                         removeFlag = true
-
-                        printConsoleView(psiFile, firstFoundIndex)
                     }
                 }
                 removeFlag
-
-//        if resolved
-//            psiFile.viewProvider.document?.replaceString(it, it + pattern.length, "canonicalPath")
             }
 
-            if (annotatorRuleModel.ruleList.isNotEmpty()) {
-                AnnotatorRepository.annotatorFileNameList.add(annotatorRuleModel.fileName)
-                AnnotatorRepository.annotatorRuleModelList.add(annotatorRuleModel)
+            if (!isNeedFix) {
+                if (currentRuleModelList.isNotEmpty()) {
+                    val findRuleModelList = AnnotatorRepository.getAnnotatorRuleModelsByFileName(psiFile.name)
+                    if (findRuleModelList.isEmpty()) {
+                        annotatorRuleModel.ruleList.addAll(currentRuleModelList)
+                        AnnotatorRepository.annotatorRuleModelList.add(annotatorRuleModel)
+                    } else {
+                        AnnotatorRepository.updateAnnotatorRuleModelsByFileName(psiFile.name, currentRuleModelList)
+                    }
+                }
             }
         }
     }
@@ -86,14 +104,8 @@ class WebViewAllowFileAccess(
         }
     }
 
-    private fun printConsoleView(layoutFile: PsiFile, passwordIndex: Int) {
-        consoleView.print(
-            "\n" +
-                    layoutFile.originalFile.virtualFile.path + ":" + (layoutFile.viewProvider.document.getLineNumber(
-                passwordIndex
-            ) + 1) + " It is necessary to disable the ability to access external files using WebView, or rather, you must explicitly set allowFileAccess = false",
-            ConsoleViewContentType.NORMAL_OUTPUT
-        )
+    private fun printConsoleView(consoleMessage: String) {
+        consoleView.print(consoleMessage, ConsoleViewContentType.NORMAL_OUTPUT)
     }
 
     fun getMethods() {

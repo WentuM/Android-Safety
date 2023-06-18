@@ -9,7 +9,7 @@ import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 
-class GetCanonicalPathType(
+class SecurityConfig(
     val project: Project,
     val consoleView: ConsoleView,
     val isNeedCheck: Boolean,
@@ -17,16 +17,14 @@ class GetCanonicalPathType(
 ) : RuleRealization {
 
     private val ruleMessage =
-        "When working with files, before giving users access to files, it is necessary to check " +
-                "whether this file is really related to our application. In this case, the use of absolutePath " +
-                "will be erroneous, since one file in the file system can have an infinite number of absolute paths. " +
-                "However, the canonical path will always be unique. You should use canonicalPath."
+        "Network Configuration Declaration - The Network Security Configuration feature allows you to configure which CAs are trusted to secure connections from an application. They protect applications from accidentally using unencrypted traffic. \" +\n" +
+                "\"To do this, add the parameter android:networkSecurityConfig=”@xml/network_security_config” to the application configuration in the manifest.xml file."
 
-    private val fixMessage = "canonicalPath"
+    private val fixMessage = "android:networkSecurityConfig=”@xml/network_security_config"
 
     override fun analyze(psiFile: PsiFile, annotatorRuleModel: AnnotatorRuleModel) {
         if (isNeedCheck) {
-            val pattern = "absolutePath"
+            val pattern = "android:networkSecurityConfig=”@xml/network_security_config"
 
             var index = 0
             var currentPsiFileTextLength = psiFile.viewProvider.document.textLength

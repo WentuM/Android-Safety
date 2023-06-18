@@ -26,10 +26,6 @@ class KotlinRuleAnnotator: Annotator {
             return
         }
 
-        if (!AnnotatorRepository.annotatorFileNameList.contains(fileName)) {
-            return
-        }
-
         val ruleModelList = AnnotatorRepository.getAnnotatorRuleModelsByFileName(fileName)
 
         for (ruleModel in ruleModelList) {
@@ -42,5 +38,9 @@ class KotlinRuleAnnotator: Annotator {
 //                .withFix(SimpleCreatePropertyQuickFix(key))
                 .create()
         }
+
+        //Secure Random seeds should not be predictable
+//        The java.security.SecureRandom class provides a strong random number generator (RNG) appropriate for cryptography. However, seeding it with a constant or another predictable value will weaken it significantly. In general, it is much safer to rely on the seed provided by the SecureRandom implementation.
+//        It is necessary to use the canonicalPath parameter instead of absolutePath. Because the canonical path is always unique.
     }
 }

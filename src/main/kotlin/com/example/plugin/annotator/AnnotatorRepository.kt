@@ -1,8 +1,6 @@
 package com.example.plugin.annotator
 
 object AnnotatorRepository {
-
-    val annotatorFileNameList = mutableListOf<String>()
     val annotatorRuleModelList = mutableListOf<AnnotatorRuleModel>()
 
     fun getAnnotatorRuleModelsByFileName(fileName: String): List<RuleModel> {

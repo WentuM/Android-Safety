@@ -12,6 +12,7 @@ import javax.swing.JPanel
 class SettingsPanel(val project: Project) : JPanel() {
 
     private val ruleListComponent = ScreenGeneratorComponent.getInstance(project).settings.ruleList
+
     private val ruleElementsPanel = RuleElementsPanel(ruleListComponent, ::onCheckBoxClicked)
 
     var onHelpClicked: (() -> Unit)? = null
@@ -42,7 +43,7 @@ class SettingsPanel(val project: Project) : JPanel() {
     fun applyRuleSettings() {
         ScreenGeneratorComponent.getInstance(project).run {
             this.settings = Settings(ruleList = ruleElementsPanel.listModel)
-            println(ruleElementsPanel.listModel)
+            this.removeCustomRuleByName(ruleElementsPanel.removeCustomList)
         }
         isModify = false
     }

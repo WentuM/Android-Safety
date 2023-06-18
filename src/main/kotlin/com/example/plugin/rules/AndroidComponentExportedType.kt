@@ -38,7 +38,6 @@ class AndroidComponentExportedType(
         }
 
         if (annotatorRuleModel.ruleList.isNotEmpty()) {
-            AnnotatorRepository.annotatorFileNameList.add(annotatorRuleModel.fileName)
             AnnotatorRepository.annotatorRuleModelList.add(annotatorRuleModel)
         }
     }

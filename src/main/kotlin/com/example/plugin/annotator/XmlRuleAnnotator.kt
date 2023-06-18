@@ -31,8 +31,6 @@ class XmlRuleAnnotator: Annotator {
             return
         }
 
-        println("good = $element")
-
 //        element.containingFile.viewProvider.document.addDocumentListener(object: DocumentListener {
 //            override fun documentChanged(event: DocumentEvent) {
 //                super.documentChanged(event)
@@ -41,11 +39,6 @@ class XmlRuleAnnotator: Annotator {
 //                println("newLength = ${event.newLength}")
 //            }
 //        })
-
-
-        if (!AnnotatorRepository.annotatorFileNameList.contains(fileName)) {
-            return
-        }
 
         val ruleModelList = AnnotatorRepository.getAnnotatorRuleModelsByFileName(fileName)
         //MainActivity.kt

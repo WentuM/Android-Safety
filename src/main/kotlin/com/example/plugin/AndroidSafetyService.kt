@@ -13,13 +13,10 @@ import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.roots.ProjectRootManager
-import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.ToolWindowAnchor
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.psi.PsiDirectory
-import java.util.*
-import java.util.stream.Collectors
+import com.intellij.psi.PsiFile
 
 class AndroidSafetyService(
     val project: Project,
@@ -36,26 +33,80 @@ class AndroidSafetyService(
     }
 
     private var webViewAllowFileAccess: WebViewAllowFileAccess
+    private var webViewAssetLoader: WebViewAssetLoader
+    private var webViewNeedListing: WebViewNeedListing
+    private var editTextAutoFill: EditTextAutoFill
+    private var editTextConfidentType: EditTextConfidentType
     private var getCanonicalPathType: GetCanonicalPathType
+    private var broadCastReceiverPermission: BroadCastReceiverPermission
+    private var storageInternalMemory: StorageInternalMemory
+    private var checkHostName: CheckHostName
+    private var contentFile: ContentFile
+    private var httpProtocol: HttpProtocol
+    private var pendingIntent: PendingIntent
+    private var permissions: Permissions
+    private var securityConfig: SecurityConfig
+    private var validatedSertificates: ValidatedSertificates
+    private var webViewAllowUniversal: WebViewAllowUniversal
+    private var webViewExpectedUrls: WebViewExpectedUrls
+    private var webViewSafety: WebViewSafety
+    private var testRule: TestRule
 
     private var kotlinRules: MutableList<RuleRealization> = mutableListOf()
 
     init {
-        AnnotatorRepository.annotatorFileNameList.clear()
         AnnotatorRepository.annotatorRuleModelList.clear()
         createConsole()
         printConsoleView(BEGIN_CONSOLE_MESSAGE)
         val ruleListForCheck = screenGeneratorComponent.settings.ruleList
 
-        customRuleModels = screenGeneratorComponent.customRuleModels.map {
-            CustomRuleRealization(it, consoleView, isNeedFix)
+        customRuleModels = screenGeneratorComponent.customRuleModels.map { customRuleModel ->
+            val isSelected = ruleListForCheck.find { it.id == customRuleModel.id }?.isSelected
+            CustomRuleRealization(customRuleModel, consoleView, isSelected == true, isNeedFix)
         }
 
         webViewAllowFileAccess = WebViewAllowFileAccess(project, consoleView, ruleListForCheck[0].isSelected, isNeedFix)
         getCanonicalPathType = GetCanonicalPathType(project, consoleView, ruleListForCheck[1].isSelected, isNeedFix)
+        webViewAssetLoader = WebViewAssetLoader(project, consoleView, ruleListForCheck[2].isSelected, isNeedFix)
+        webViewNeedListing = WebViewNeedListing(project, consoleView, ruleListForCheck[3].isSelected, isNeedFix)
+        editTextAutoFill = EditTextAutoFill(project, consoleView, ruleListForCheck[4].isSelected, isNeedFix)
+        editTextConfidentType = EditTextConfidentType(project, consoleView, ruleListForCheck[5].isSelected, isNeedFix)
+        checkHostName = CheckHostName(project, consoleView, ruleListForCheck[6].isSelected, isNeedFix)
+        contentFile = ContentFile(project, consoleView, ruleListForCheck[7].isSelected, isNeedFix)
+        httpProtocol = HttpProtocol(project, consoleView, ruleListForCheck[8].isSelected, isNeedFix)
+        pendingIntent = PendingIntent(project, consoleView, ruleListForCheck[9].isSelected, isNeedFix)
+        permissions = Permissions(project, consoleView, ruleListForCheck[10].isSelected, isNeedFix)
+        securityConfig = SecurityConfig(project, consoleView, ruleListForCheck[11].isSelected, isNeedFix)
+        var secConfig = SecurityConfig(project, consoleView, ruleListForCheck[18].isSelected, isNeedFix)
+        validatedSertificates = ValidatedSertificates(project, consoleView, ruleListForCheck[12].isSelected, isNeedFix)
+        webViewAllowUniversal = WebViewAllowUniversal(project, consoleView, ruleListForCheck[13].isSelected, isNeedFix)
+        webViewExpectedUrls = WebViewExpectedUrls(project, consoleView, ruleListForCheck[16].isSelected, isNeedFix)
+        webViewSafety = WebViewSafety(project, consoleView, ruleListForCheck[15].isSelected, isNeedFix)
+        var safety = WebViewSafety(project, consoleView, ruleListForCheck[19].isSelected, isNeedFix)
+        broadCastReceiverPermission =
+            BroadCastReceiverPermission(project, consoleView, ruleListForCheck[20].isSelected, isNeedFix)
+        storageInternalMemory = StorageInternalMemory(project, consoleView, ruleListForCheck[14].isSelected, isNeedFix)
+        testRule = TestRule(project, consoleView, ruleListForCheck[17].isSelected, isNeedFix)
         kotlinRules.apply {
-            add(getCanonicalPathType)
             add(webViewAllowFileAccess)
+            add(broadCastReceiverPermission)
+            add(getCanonicalPathType)
+            add(storageInternalMemory)
+            add(webViewAssetLoader)
+            add(webViewNeedListing)
+            add(editTextAutoFill)
+            add(editTextConfidentType)
+            add(checkHostName)
+            add(contentFile)
+            add(httpProtocol)
+            add(pendingIntent)
+            add(httpProtocol)
+            add(securityConfig)
+            add(validatedSertificates)
+            add(webViewAllowUniversal)
+            add(webViewExpectedUrls)
+            add(webViewSafety)
+            add(testRule)
         }
 
         getAllFiles()
@@ -64,25 +115,12 @@ class AndroidSafetyService(
         screenGeneratorComponent.settingsRules = AnnotatorRepository.annotatorRuleModelList
         printConsoleView(END_CONSOLE_MESSAGE)
 
-//        EditTextConfidentType(project, consoleView).show()
     }
 
     private fun getAllFiles() {
         val projectName: String = project.name
-        val vFiles: Array<VirtualFile> = ProjectRootManager.getInstance(project).contentRootsFromAllModules
-        val sourceRootsList: String = Arrays.stream(vFiles).map(VirtualFile::getUrl).collect(Collectors.joining("\n"))
-//        println("----------->$sourceRootsList")
-        //
-//        println(projectStructure.getAllModules())
-//        val project = projectStructure.getProject()
         val allModules = ModuleManager.getInstance(project).modules
         for (module in allModules) {
-//            val path = module
-//            val sourceRootList = ModuleManager.getInstance(project)
-//                .findModuleByName(module.name)
-//                ?.sourceRoots
-//                ?.map { SourceRoot(project, it) }
-//                ?: throw IllegalStateException("${module.name} module doesn't exist!")
 
             val resourcesSubdirectory = findResourcesSubdirectory(
                 project,
@@ -91,14 +129,10 @@ class AndroidSafetyService(
                     nameWithoutPrefix = module.name.replace("${projectName}.", "")
                 )
             )
-//            println(resourcesSubdirectory.toString())
             val listFileTextLayout = resourcesSubdirectory?.getFilesText()
             listFileTextLayout?.forEach {
-//                firstTestXml(it)
                 webViewAllowFileAccess.firstTestXml(it)
             }
-
-//            kotlinRules.add(webViewAllowFileAccess)
 
             findCodeSubdirectory(
                 Module(
@@ -106,23 +140,11 @@ class AndroidSafetyService(
                     nameWithoutPrefix = module.name.replace("${projectName}.", "")
                 )
             )
-//            println("spisok - " + listFileCodeTextLayout.toString())
-//            listFileCodeTextLayout?.forEach {
-//                val a = it.toUElement(UMethod::class.java) as UMethod
-//                println("ватофак - " + a.uastBody.toString())
-//            }
         }
         AnnotatorRepository.annotatorRuleModelList
     }
 
     private fun createConsole() {
-        // 1) сделать один вызов метода, который заполняет контент, при перезапуске
-        // уже предусмотрено, что открывается новый диалог
-        // 2) фокус и сам билд открываются, если билд активен - сделать активным билд в первый запуск)
-        // 3) как в документации сделать фильтр на редактируемый файл, только подсвечивать буду с помощью плагина,
-        // а точнее по названию файла и индексам, где нужно подсветить?
-        //
-
         //перезапуск
         val currentToolWindow = ToolWindowManager.getInstance(project).getToolWindow("Android Safety")
         currentToolWindow?.remove()
@@ -143,17 +165,14 @@ class AndroidSafetyService(
             val currentContent = toolWindow.contentManager.findContent("Android Safety Output")
             println(toolWindow.contentManager.findContent("Android Safety Output"))
             if (currentContent != null) {
-                println("yes")
                 println(toolWindow.contentManager.removeContent(currentContent, true))
                 toolWindow.contentManager.addContent(content)
                 toolWindow.contentManager.setSelectedContent(content)
             } else {
-                println("no")
                 toolWindow.contentManager.addContent(content)
                 toolWindow.contentManager.setSelectedContent(content)
             }
         }
-//        mainToolWindow.remove()
     }
 
     private fun findResourcesSubdirectory(project: Project, module: Module): Directory? {
@@ -172,17 +191,45 @@ class AndroidSafetyService(
 
     private fun getSubDirectories(psiDirectory: PsiDirectory) {
         psiDirectory.files.forEach { psiFile ->
+            var index = 0
+            var currentPsiFileTextLength = psiFile.textLength
+            var lastStartOffset = 0
             val hashCode = screenGeneratorComponent.getHashCodeFileByFileName(psiFile.name)
 
             if (hashCode != psiFile.text.hashCode()) {
+
                 val annotatorRuleModel =
                     AnnotatorRuleModel(psiFile.name, mutableListOf(), psiFile.text.hashCode())
                 kotlinRules.forEach { kotlinRule ->
                     kotlinRule.analyze(psiFile, annotatorRuleModel)
                 }
+                customRuleModels.forEach { customRule ->
+                    customRule.analyze(psiFile, annotatorRuleModel)
+                }
+
             } else {
-                screenGeneratorComponent.getAnnotatorRuleModelsByFileName(psiFile.name)
-                    ?.let { AnnotatorRepository.annotatorRuleModelList.add(it) }
+
+                screenGeneratorComponent.getAnnotatorRuleModelsByFileName(psiFile.name)?.let {
+                    AnnotatorRepository.annotatorRuleModelList.add(it)
+                    val ruleSet = it.ruleList.toSet()
+                    ruleSet.forEach { ruleModel ->
+                        if (ruleModel.startOffset > lastStartOffset) {
+                            fix(
+                                psiFile,
+                                ruleModel.startOffset + index,
+                                ruleModel.endOffset + index,
+                                ruleModel.fixMessage
+                            )
+                        } else {
+                            fix(psiFile, ruleModel.startOffset, ruleModel.endOffset, ruleModel.fixMessage)
+                        }
+                        lastStartOffset = ruleModel.startOffset
+                        index += (psiFile.textLength - currentPsiFileTextLength)
+                        currentPsiFileTextLength = psiFile.textLength
+                        printConsoleView(ruleModel.consoleMessage)
+                    }
+                }
+
             }
         }
         psiDirectory.subdirectories.forEach {
@@ -192,5 +239,13 @@ class AndroidSafetyService(
 
     private fun printConsoleView(message: String) {
         consoleView.print(message, ConsoleViewContentType.NORMAL_OUTPUT)
+    }
+
+    private fun fix(psiFile: PsiFile, startOffset: Int, endOffset: Int, fixMessage: String) {
+        if (isNeedFix) {
+            if (fixMessage.isNotBlank()) {
+                psiFile.viewProvider.document?.replaceString(startOffset, endOffset, fixMessage)
+            }
+        }
     }
 }

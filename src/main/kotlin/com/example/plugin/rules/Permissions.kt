@@ -9,7 +9,7 @@ import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 
-class GetCanonicalPathType(
+class Permissions(
     val project: Project,
     val consoleView: ConsoleView,
     val isNeedCheck: Boolean,
@@ -17,16 +17,14 @@ class GetCanonicalPathType(
 ) : RuleRealization {
 
     private val ruleMessage =
-        "When working with files, before giving users access to files, it is necessary to check " +
-                "whether this file is really related to our application. In this case, the use of absolutePath " +
-                "will be erroneous, since one file in the file system can have an infinite number of absolute paths. " +
-                "However, the canonical path will always be unique. You should use canonicalPath."
-
-    private val fixMessage = "canonicalPath"
+        "Permissions for actions that can be performed in another application - Do not use permissions for actions that can be performed in another application that already has permissions to do so. So, you need to use redirect intents with the appropriate requests. \" +\n" +
+                "\"For example, instead of using the READ_CONTACTS, WRITE_CONTACTS permissions in your application, you need to redirect the user in the Contacts application, which already has permissions to do so. Intent(Intent.ACTION_INSERT).apply { type = ContactsContract.Contacts.CONTENT_TYPE}.also {intent -> intent.resolveActivity(packageManager)?.startActivity(intent) }"
 
     override fun analyze(psiFile: PsiFile, annotatorRuleModel: AnnotatorRuleModel) {
         if (isNeedCheck) {
-            val pattern = "absolutePath"
+            val pattern = "intent.resolveActivity(packageManager)?.startActivity(intent)"
+            val secondPattern = "WRITE_CONTACTS"
+            val thirdPattern = "READ_CONTACTS"
 
             var index = 0
             var currentPsiFileTextLength = psiFile.viewProvider.document.textLength
@@ -35,8 +33,13 @@ class GetCanonicalPathType(
             val currentRuleModelList = mutableListOf<RuleModel>()
 
             val foundIndexes = MainKt().performKMPSearch(psiFile.text, pattern)
+            val foundIndexes2 = MainKt().performKMPSearch(psiFile.text, secondPattern)
+            val foundIndexes3 = MainKt().performKMPSearch(psiFile.text, thirdPattern)
 
             foundIndexes.forEach {
+                foundIndexes2.forEach {
+                    val list = it
+                }
 
                 val consoleMessage = "\n" +
                         psiFile.originalFile.virtualFile.path + ":" + (psiFile.viewProvider.document.getLineNumber(
@@ -44,27 +47,14 @@ class GetCanonicalPathType(
                 ) + 1) + " $ruleMessage"
                 //annotator
 
-                if (isNeedFix) {
-                    if (it > lastStartOffset) {
-                        psiFile.viewProvider.document?.replaceString(it + index, it + pattern.length + index, fixMessage)
-                        index += (psiFile.viewProvider.document.textLength - currentPsiFileTextLength)
-                    } else {
-                        psiFile.viewProvider.document?.replaceString(it, it + pattern.length, fixMessage)
-                    }
-                    lastStartOffset = it
-                    currentPsiFileTextLength = psiFile.viewProvider.document.textLength
-                } else {
-                    currentRuleModelList.add(
-                        RuleModel(
-                            it,
-                            it + pattern.length,
-                            ruleMessage,
-                            consoleMessage,
-                            fixMessage
-                        )
+                currentRuleModelList.add(
+                    RuleModel(
+                        it,
+                        it + pattern.length,
+                        ruleMessage,
+                        consoleMessage
                     )
-                }
-
+                )
                 printConsoleView(consoleMessage)
             }
 
